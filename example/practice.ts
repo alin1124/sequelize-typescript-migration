@@ -5,19 +5,18 @@ import dotenv from "dotenv";
 
 import { Car } from "models/car.model";
 import { CarBrand } from "models/car_brand.model";
-import { Dialect } from "sequelize";
+const config = require("./db/config.json");
 
 dotenv.config();
 
 const bootstrap = async () => {
   const sequelize: Sequelize = new Sequelize({
-    username: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASS,
-    database: process.env.DATABASE_NAME,
-    host: process.env.DATABASE_HOST,
-    dialect: process.env.DATABASE_DIALECT as Dialect,
+    username: config.development.username,
+    password: config.development.password,
+    database: config.development.database,
+    host: config.development.host,
+    dialect: config.development.dialect,
     models: [CarBrand, Car],
-    timezone: process.env.DATABASE_TIMEZONE,
     logging: false,
   });
   try {
