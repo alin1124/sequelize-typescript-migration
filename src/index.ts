@@ -33,7 +33,9 @@ export type IMigrationOptions = {
   comment?: string;
 
   debug?: boolean;
-} & ReverseModelsOptions
+
+  sync?: boolean;
+} & ReverseModelsOptions;
 
 export class SequelizeTypescriptMigration {
   /**
@@ -42,104 +44,95 @@ export class SequelizeTypescriptMigration {
    * @param sequelize sequelize-typescript instance
    * @param options options
    */
-  public static makeMigration = async (
-    sequelize: Sequelize,
-    options: IMigrationOptions
-  ) => {
-    options.preview = options.preview || false;
+  public static makeMigration = async (sequelize: Sequelize, options: IMigrationOptions) => {
+      options.preview = options.preview || false;
 
-    if (!existsSync(options.outDir))
-      return Promise.reject(
-        new Error(
-          `${options.outDir} not exists. check path and if you did 'npx sequelize init' you must use path used in sequelize migration path`
-        )
-      );
+      if (!existsSync(options.outDir))
+          return Promise.reject(
+              new Error(
+                  `${options.outDir} not exists. check path and if you did 'npx sequelize init' you must use path used in sequelize migration path`,
+              ),
+          );
 
-    await sequelize.authenticate();
+      await sequelize.authenticate();
 
-    const models: {
-      [key: string]: ModelCtor<Model>;
-    } = sequelize.models;
+      const models: {
+          [key: string]: ModelCtor<Model>;
+      } = sequelize.models;
 
-    const queryInterface = sequelize.getQueryInterface();
+      const queryInterface = sequelize.getQueryInterface();
 
-    await createMigrationTable(sequelize);
+      await createMigrationTable(sequelize);
 
-    const lastMigrationState = await getLastMigrationState(sequelize);
-    const previousState: MigrationState = {
-      revision: lastMigrationState?.revision ?? 0,
-      version: lastMigrationState?.version ?? 1,
-      tables: lastMigrationState?.tables ?? {},
-    };
-    const currentState: MigrationState = {
-      revision: (previousState.revision || 0) + 1,
-      tables: getTablesFromModels(sequelize, models, options),
-    };
+      const lastMigrationState = await getLastMigrationState(sequelize);
+      const previousState: MigrationState = {
+          revision: lastMigrationState?.revision ?? 0,
+          version: lastMigrationState?.version ?? 1,
+          tables: lastMigrationState?.tables ?? {},
+      };
+      const currentState: MigrationState = {
+          revision: (previousState.revision || 0) + 1,
+          tables: getTablesFromModels(sequelize, models, options),
+      };
 
-    const upActions = getDiffActionsFromTables(
-      previousState.tables,
-      currentState.tables
-    );
-    const downActions = getDiffActionsFromTables(
-      currentState.tables,
-      previousState.tables
-    );
+      let migration;
 
-    const migration = getMigration(upActions);
-    const tmp = getMigration(downActions);
+      if (options.sync) {
+          const upActions = getDiffActionsFromTables(previousState.tables, currentState.tables);
+          const downActions = getDiffActionsFromTables(currentState.tables, previousState.tables);
+  
+          migration = getMigration(upActions);
+          const tmp = getMigration(downActions);
+  
+          migration.commandsDown = tmp.commandsUp;
+          //create table sync migration
+          if (migration.commandsUp.length === 0) return Promise.resolve({ msg: 'success: no changes found' });
 
-    migration.commandsDown = tmp.commandsUp;
+          // log
+          migration.consoleOut.forEach((v) => {
+              console.log(`[Actions] ${v}`);
+          });
 
-    if (migration.commandsUp.length === 0)
-      return Promise.resolve({ msg: "success: no changes found" });
+          if (options.preview) {
+              console.log('Migration result:');
+              console.log(beautify(`[ \n${migration.commandsUp.join(', \n')} \n];\n`));
+              console.log('Undo commands:');
+              console.log(beautify(`[ \n${migration.commandsDown.join(', \n')} \n];\n`));
+  
+              return Promise.resolve({ msg: 'success without save' });
+          }
+      } else {
+          //create empty migration for custom migration
+          migration = getMigration([]);
+      }
 
-    // log
-    migration.consoleOut.forEach((v) => {
-      console.log(`[Actions] ${v}`);
-    });
+      const info = await writeMigration(currentState, migration, options);
 
-    if (options.preview) {
-      console.log("Migration result:");
-      console.log(beautify(`[ \n${migration.commandsUp.join(", \n")} \n];\n`));
-      console.log("Undo commands:");
-      console.log(
-        beautify(`[ \n${migration.commandsDown.join(", \n")} \n];\n`)
-      );
+      console.log(`New migration to revision ${currentState.revision} has been saved to file '${info.filename}'`);
 
-      return Promise.resolve({ msg: "success without save" });
-    }
+      // save current state, Ugly hack, see https://github.com/sequelize/sequelize/issues/8310
+      const rows = [
+          {
+              revision: currentState.revision,
+              name: info.info.name,
+              state: JSON.stringify(currentState),
+          },
+      ];
 
-    const info = await writeMigration(currentState, migration, options);
+      try {
+          await queryInterface.bulkDelete('SequelizeMigrationsMeta', {
+              revision: currentState.revision,
+          });
+          await queryInterface.bulkInsert('SequelizeMigrationsMeta', rows);
 
-    console.log(
-      `New migration to revision ${currentState.revision} has been saved to file '${info.filename}'`
-    );
+          console.log(`Use sequelize CLI:
+npx sequelize db:migrate --to ${info.revisionNumber}-${info.info.name}.js ${`--migrations-path=${options.outDir}`} `);
 
-    // save current state, Ugly hack, see https://github.com/sequelize/sequelize/issues/8310
-    const rows = [
-      {
-        revision: currentState.revision,
-        name: info.info.name,
-        state: JSON.stringify(currentState),
-      },
-    ];
+          return await Promise.resolve({ msg: 'success' });
+      } catch (err) {
+          if (options.debug) console.error(err);
+      }
 
-    try {
-      await queryInterface.bulkDelete("SequelizeMigrationsMeta", {
-        revision: currentState.revision,
-      });
-      await queryInterface.bulkInsert("SequelizeMigrationsMeta", rows);
-
-      console.log(`Use sequelize CLI:
-  npx sequelize db:migrate --to ${info.revisionNumber}-${
-        info.info.name
-      }.js ${`--migrations-path=${options.outDir}`} `);
-
-      return await Promise.resolve({ msg: "success" });
-    } catch (err) {
-      if (options.debug) console.error(err);
-    }
-
-    return Promise.resolve({ msg: "success anyway..." });
+      return Promise.resolve({ msg: 'success anyway...' });
   };
 }

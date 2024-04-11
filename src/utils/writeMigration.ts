@@ -116,39 +116,23 @@ ${commands}
 ${commandsDown}
 
 module.exports = {
-  pos: 0,
-  up: function(queryInterface, Sequelize) {
-    let index = this.pos;
-
-    return new Promise(function(resolve, reject) {
-      function next() {
-        if (index < migrationCommands.length) {
-          let command = migrationCommands[index];
-          console.log("[#"+index+"] execute: " + command.fn);
-          index++;
-          queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
-        } else resolve();
-      }
-
-      next();
-    });
+  async up (queryInterface, Sequelize) {
+    let index = 0;
+    while (index < migrationCommands.length) {
+        let command = migrationCommands[index];
+        console.log("[#"+index+"] execute: " + command.fn);
+        index++;
+        await queryInterface[command.fn].apply(queryInterface, command.params);
+    }
   },
-  down: function(queryInterface, Sequelize) {
-    let index = this.pos;
-
-    return new Promise(function(resolve, reject) {
-      function next() {
-        if (index < rollbackCommands.length) {
-          let command = rollbackCommands[index];
-          console.log("[#"+index+"] execute: " + command.fn);
-          index++;
-          queryInterface[command.fn].apply(queryInterface, command.params).then(next, reject);
-        }
-        else resolve();
-      }
-
-      next();
-    });
+  async down (queryInterface, Sequelize) {
+    let index = 0;
+    while (index < rollbackCommands.length) {
+        let command = rollbackCommands[index];
+        console.log("[#"+index+"] execute: " + command.fn);
+        index++;
+        await queryInterface[command.fn].apply(queryInterface, command.params);
+    }
   },
   info
 };
