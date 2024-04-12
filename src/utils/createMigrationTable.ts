@@ -13,8 +13,14 @@ export default async function createMigrationTable(sequelize: Sequelize) {
       unique: true,
       primaryKey: true,
     },
-    date: {
+    createdAt: {
       type: SequelizeTypescriptDataType.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.fn("now"),
+    },
+    updatedAt: {
+      type: SequelizeTypescriptDataType.DATE,
+      allowNull: false,
       defaultValue: Sequelize.fn("now"),
     },
   });
@@ -33,8 +39,14 @@ export default async function createMigrationTable(sequelize: Sequelize) {
       type: SequelizeTypescriptDataType.JSON,
       allowNull: false,
     },
-    date: {
+    createdAt: {
       type: SequelizeTypescriptDataType.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.fn("now"),
+    },
+    updatedAt: {
+      type: SequelizeTypescriptDataType.DATE,
+      allowNull: false,
       defaultValue: Sequelize.fn("now"),
     },
   });
