@@ -24,6 +24,7 @@ const bootstrap = async () => {
       outDir: join(__dirname, "./db/migrations"),
       migrationName: "init",
       useSnakeCase: false,
+      sync: true,
     });
     console.log(result);
   } catch (e) {

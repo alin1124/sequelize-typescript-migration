@@ -5,7 +5,7 @@ import type { Sequelize } from "sequelize-typescript";
 
 import type { MigrationState } from "./constants";
 import createMigrationTable from "./utils/createMigrationTable";
-import getDiffActionsFromTables from "./utils/getDiffActionsFromTables";
+import getDiffActionsFromTables, { Direction } from "./utils/getDiffActionsFromTables";
 import getLastMigrationState from "./utils/getLastMigrationState";
 import getMigration from "./utils/getMigration";
 import getTablesFromModels, { ReverseModelsOptions } from "./utils/getTablesFromModels";
@@ -78,8 +78,8 @@ export class SequelizeTypescriptMigration {
       let migration;
 
       if (options.sync) {
-          const upActions = getDiffActionsFromTables(previousState.tables, currentState.tables);
-          const downActions = getDiffActionsFromTables(currentState.tables, previousState.tables);
+          const upActions = getDiffActionsFromTables(previousState.tables, currentState.tables, Direction.Up);
+          const downActions = getDiffActionsFromTables(currentState.tables, previousState.tables, Direction.Down);
   
           migration = getMigration(upActions);
           const tmp = getMigration(downActions);
