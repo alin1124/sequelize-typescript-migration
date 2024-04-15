@@ -21,9 +21,15 @@ export interface IAction {
   depends: string[];
 }
 
+export enum Direction {
+  Up,
+  Down
+}
+
 export default function getDiffActionsFromTables(
   previousStateTables: Json,
-  currentStateTables: Json
+  currentStateTables: Json,
+  direction: Direction
 ) {
   const actions: IAction[] = [];
   const differences = diff(previousStateTables, currentStateTables);
@@ -77,7 +83,8 @@ export default function getDiffActionsFromTables(
 
           if (df.path[1] === "schema") {
             // if (df.path.length === 3) - new field
-            if (df.path.length === 3) {
+            // For down migration, we dont want to add the column back since no column will be removed
+            if (df.path.length === 3 && direction !== Direction.Down) {
               // new field
               if (df.rhs && df.rhs.references)
                 depends.push(df.rhs.references.model);
@@ -151,7 +158,8 @@ export default function getDiffActionsFromTables(
 
           if (df.path[1] === "schema") {
             // if (df.path.length === 3) - drop field
-            if (df.path.length === 3) {
+            // We do not want to remove any column from DB
+            if (df.path.length === 3 && direction !== Direction.Up) {
               // drop column
               actions.push({
                 actionType: "removeColumn",
