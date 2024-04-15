@@ -5,7 +5,7 @@ import type { Sequelize } from "sequelize-typescript";
 
 import type { MigrationState } from "./constants";
 import createMigrationTable from "./utils/createMigrationTable";
-import getDiffActionsFromTables from "./utils/getDiffActionsFromTables";
+import getDiffActionsFromTables, { Direction } from "./utils/getDiffActionsFromTables";
 import { getLastMigrationState, getLastMigrationVersion } from "./utils/getLastMigrationState";
 import getMigration from "./utils/getMigration";
 import getTablesFromModels, { ReverseModelsOptions } from "./utils/getTablesFromModels";
@@ -83,12 +83,12 @@ export class SequelizeTypescriptMigration {
         let info;
 
         if (options.sync) {
-            const upActions = getDiffActionsFromTables(previousState.tables, currentState.tables);
-            const downActions = getDiffActionsFromTables(currentState.tables, previousState.tables);
-
+            const upActions = getDiffActionsFromTables(previousState.tables, currentState.tables, Direction.Up);
+            const downActions = getDiffActionsFromTables(currentState.tables, previousState.tables, Direction.Down);
+    
             const migration = getMigration(upActions);
             const tmp = getMigration(downActions);
-
+    
             migration.commandsDown = tmp.commandsUp;
             //create table sync migration
             if (migration.commandsUp.length === 0) return Promise.resolve({ msg: 'success: no changes found' });
