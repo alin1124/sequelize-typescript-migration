@@ -1,4 +1,36 @@
-'use strict';
+import * as fs from "fs";
+import * as path from "path";
+
+import removeCurrentRevisionMigrations from "./removeCurrentRevisionMigrations";
+
+export const FILE_NAME = '00000001-init.js';
+
+export const MIGRATION_NAME = 'init';
+
+export default async function initMigration(currentState, options) {
+  await removeCurrentRevisionMigrations(
+    currentState.revision,
+    options.outDir,
+    options
+  );
+
+  const name = MIGRATION_NAME;
+  const comment = options.comment || "";
+
+  let myState = JSON.stringify(currentState);
+  const searchRegExp = /'/g;
+  const replaceWith = "\\'";
+
+  myState = myState.replace(searchRegExp, replaceWith);
+
+  const info = {
+    revision: currentState.revision,
+    name,
+    created: new Date(),
+    comment,
+  };
+
+  const template = `'use strict';
 
   const Sequelize = require('sequelize');
   
@@ -136,3 +168,18 @@
     },
     info
   };   
+`;
+
+  const revisionNumber = currentState.revision.toString().padStart(8, "0");
+
+  const filename = path.join(
+    options.outDir,
+    `${
+      revisionNumber + (`-${name.replace(/[\s-]/g, "_")}`)
+    }.js`
+  );
+
+  fs.writeFileSync(filename, template);
+
+  return { filename, info, revisionNumber };
+}

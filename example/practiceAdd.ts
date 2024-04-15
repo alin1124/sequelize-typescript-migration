@@ -23,8 +23,7 @@ const bootstrap = async () => {
     const result = await SequelizeTypescriptMigration.makeMigration(sequelize, {
       outDir: join(__dirname, "./db/migrations"),
       migrationName: process.argv[2],
-      useSnakeCase: false,
-      sync: true,
+      useSnakeCase: false
     });
     console.log(result);
   } catch (e) {

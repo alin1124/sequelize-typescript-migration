@@ -11,7 +11,7 @@ export default async function writeMigration(currentState, migration, options) {
     options
   );
 
-  const name = options.migrationName || "noname";
+  const name = options.migrationName || "table-sync";
   const comment = options.comment || "";
 
   let myState = JSON.stringify(currentState);
@@ -21,27 +21,6 @@ export default async function writeMigration(currentState, migration, options) {
   myState = myState.replace(searchRegExp, replaceWith);
 
   const versionCommands = `
-      {
-        fn: "createTable",
-        params: [
-          "SequelizeMigrationsMeta",
-          {
-            "revision": {
-              "primaryKey": true,
-              "type": Sequelize.INTEGER
-            },
-            "name": {
-              "allowNull": false,
-              "type": Sequelize.STRING
-            },
-            "state": {
-              "allowNull": false,
-              "type": Sequelize.JSON
-            },
-          },
-          {}
-        ]
-      },
       {
         fn: "bulkDelete",
         params: [

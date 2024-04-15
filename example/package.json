@@ -7,9 +7,10 @@
     "db:create": "sequelize db:create",
     "db:drop": "sequelize db:drop",
     "db:migrate": "sequelize db:migrate",
-    "db:migrate:create": "ts-node -T -r tsconfig-paths/register practice.ts",
+    "db:migrate:create": "ts-node -T -r tsconfig-paths/register practice.ts ${npm_config_name:=table_sync}",
     "db:migrate:undo": "sequelize db:migrate:undo",
-    "db:migrate:undo:all": "sequelize db:migrate:undo:all"
+    "db:migrate:undo:all": "sequelize db:migrate:undo:all",
+    "db:migrate:add": "ts-node -T -r tsconfig-paths/register practiceAdd.ts ${npm_config_name:=sql}"
   },
   "dependencies": {
     "dotenv": "^16.0.1",
