@@ -1,6 +1,6 @@
 {
   "name": "sequelize-typescript-migration-ht",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "migration tool for sequelize & typescript users",
   "keywords": [
     "sequelize",
@@ -38,9 +38,11 @@
     "mysql2": "^2.3.3",
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.23.2",
-    "sequelize-typescript": "^2.1.3"
+    "sequelize-typescript": "^2.1.3",
+    "sequelize-cli": "^6.5.1"
   },
   "devDependencies": {
+    "@types/umzug": "^2.3.7",
     "@types/bluebird": "^3.5.36",
     "@types/deep-diff": "^1.0.1",
     "@types/inflection": "^1.13.0",

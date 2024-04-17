@@ -1,7 +1,7 @@
 import { existsSync } from "fs";
 import beautify from "js-beautify";
 import type { Model, ModelCtor } from "sequelize/types";
-import type { Sequelize } from "sequelize-typescript";
+import { Sequelize } from "sequelize-typescript";
 
 import type { MigrationState } from "./constants";
 import createMigrationTable from "./utils/createMigrationTable";
@@ -13,6 +13,7 @@ import writeMigration from "./utils/writeMigration";
 import sqlMigration from "./utils/sqlMigration";
 import path from "path";
 import initMigration, { FILE_NAME } from "./utils/initMigration";
+import getMigrator from "./utils/getMigrator";
 
 export type IMigrationOptions = {
     /**
@@ -40,6 +41,20 @@ export type IMigrationOptions = {
     sync?: boolean;
 } & ReverseModelsOptions;
 
+export type IMigratorOption = {
+
+    path: string;
+
+    dir: MigratorDir;
+
+    to?: string;
+};
+
+export enum MigratorDir {
+    UP = 'up',
+    DOWN = 'down'
+}
+
 export class SequelizeTypescriptMigration {
     /**
      * generates migration file including up, down code
@@ -63,14 +78,10 @@ export class SequelizeTypescriptMigration {
             [key: string]: ModelCtor<Model>;
         } = sequelize.models;
 
-        const queryInterface = sequelize.getQueryInterface();
-
-        await createMigrationTable(sequelize);
-
         const lastMigrationState = await getLastMigrationState(sequelize);
         const lastMigrationVersion = await getLastMigrationVersion(sequelize);
         const previousState: MigrationState = {
-            revision: lastMigrationVersion,
+            revision: lastMigrationVersion ?? 0,
             tables: lastMigrationState?.tables ?? {},
         };
         const currentState: MigrationState = {
@@ -116,21 +127,6 @@ export class SequelizeTypescriptMigration {
 
 
         try {
-            if (options.sync) {
-                // save current state, Ugly hack, see https://github.com/sequelize/sequelize/issues/8310
-                const rows = [
-                    {
-                        revision: currentState.revision,
-                        name: info.info.name,
-                        state: JSON.stringify(currentState),
-                    },
-                ];
-                await queryInterface.bulkDelete('SequelizeMigrationsMeta', {
-                    revision: currentState.revision,
-                });
-                await queryInterface.bulkInsert('SequelizeMigrationsMeta', rows);
-            }
-
             console.log(`Use sequelize CLI:
 npx sequelize db:migrate --to ${info.revisionNumber}-${info.info.name}.js ${`--migrations-path=${options.outDir}`} `);
 
@@ -161,11 +157,12 @@ npx sequelize db:migrate --to ${info.revisionNumber}-${info.info.name}.js ${`--m
                 state: JSON.stringify(currentState),
             },
         ];
-        await queryInterface.bulkDelete('SequelizeMigrationsMeta', {
-            revision: currentState.revision,
-        });
-        await queryInterface.bulkInsert('SequelizeMigrationsMeta', rows);
 
         currentState.revision = currentState.revision! + 1; 
+    }
+
+    public static migrate = async (sequelize: Sequelize, options: IMigratorOption) => {
+        const umzug = getMigrator(sequelize, options.path);
+        return MigratorDir.UP === options.dir ? umzug.up(options.to) : umzug.down(options.to);
     }
 }
