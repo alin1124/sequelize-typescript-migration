@@ -1,5 +1,5 @@
 {
-  "name": "ht-custom-sequelize",
+  "name": "ht-sequelize",
   "version": "1.3.1",
   "description": "migration tool for sequelize & haven developers",
   "keywords": [
