@@ -2,7 +2,7 @@ import type {
   Model,
   ModelAttributeColumnOptions,
   ModelStatic
-} from "sequelize/types";
+} from "sequelize";
 import type { Sequelize } from "sequelize-typescript";
 import { makeColumnName } from "./makeColumnName";
 import parseIndex from "./parseIndex";
