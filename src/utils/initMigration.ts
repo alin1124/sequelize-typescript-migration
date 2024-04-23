@@ -148,7 +148,7 @@ export default async function initMigration(currentState, options) {
   ];
   
   module.exports = {
-    async up (queryInterface, Sequelize) {
+    async up (queryInterface: any, Sequelize: any) {
       let index = 0;
       while (index < migrationCommands.length) {
           let command = migrationCommands[index];
@@ -157,7 +157,7 @@ export default async function initMigration(currentState, options) {
           await queryInterface[command.fn].apply(queryInterface, command.params);
       }
     },
-    async down (queryInterface, Sequelize) {
+    async down (queryInterface: any, Sequelize: any) {
       let index = 0;
       while (index < rollbackCommands.length) {
           let command = rollbackCommands[index];
@@ -176,7 +176,7 @@ export default async function initMigration(currentState, options) {
     options.outDir,
     `${
       revisionNumber + (`-${name.replace(/[\s-]/g, "_")}`)
-    }.js`
+    }.cts`
   );
 
   fs.writeFileSync(filename, template);
