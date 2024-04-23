@@ -4,7 +4,6 @@ import type { Model, ModelCtor } from "sequelize/types";
 import { Sequelize } from "sequelize-typescript";
 
 import type { MigrationState } from "./constants";
-import createMigrationTable from "./utils/createMigrationTable";
 import getDiffActionsFromTables, { Direction } from "./utils/getDiffActionsFromTables";
 import { getLastMigrationState, getLastMigrationVersion } from "./utils/getLastMigrationState";
 import getMigration from "./utils/getMigration";
@@ -48,6 +47,8 @@ export type IMigratorOption = {
     dir: MigratorDir;
 
     to?: string;
+
+    pattern?: RegExp;
 };
 
 export enum MigratorDir {
@@ -162,7 +163,7 @@ npx sequelize db:migrate --to ${info.revisionNumber}-${info.info.name}.js ${`--m
     }
 
     public static migrate = async (sequelize: Sequelize, options: IMigratorOption) => {
-        const umzug = getMigrator(sequelize, options.path);
+        const umzug = getMigrator(sequelize, options.path, options.pattern);
         return MigratorDir.UP === options.dir ? umzug.up(options.to) : umzug.down(options.to);
     }
 }
