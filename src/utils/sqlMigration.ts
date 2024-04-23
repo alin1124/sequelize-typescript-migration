@@ -30,7 +30,7 @@ export default async function sqlMigration(currentState, options) {
 
   /** @type {import('sequelize-cli').Migration} */
   module.exports = {
-    async up (queryInterface, Sequelize) {
+    async up (queryInterface: any, Sequelize: any) {
       /**
        * Add altering commands here.
        *
@@ -39,13 +39,12 @@ export default async function sqlMigration(currentState, options) {
        */
     },
   
-    async down (queryInterface, Sequelize) {
+    async down (queryInterface: any, Sequelize: any) {
       /**
        * Add reverting commands here.
        *
        * Example:
-       * await queryInterface.query('DROP TABLE mytable');
-
+       * await queryInterface.query('DROP TABLE mytable'); 
        */
     }
   };  
@@ -57,7 +56,7 @@ export default async function sqlMigration(currentState, options) {
     options.outDir,
     `${
       revisionNumber + (name !== "" ? `-${name.replace(/[\s-]/g, "_")}` : "")
-    }.js`
+    }.cts`
   );
 
   fs.writeFileSync(filename, template);

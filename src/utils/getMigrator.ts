@@ -1,7 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import Umzug from 'umzug';
 
-export default function getMigrator(sequelize: Sequelize, path: string, pattern = /\.js$/) {
+export default function getMigrator(sequelize: Sequelize, path: string, pattern = /\.cts$/) {
   return new Umzug({
     migrations: {
       // indicates the folder containing the migration .js files

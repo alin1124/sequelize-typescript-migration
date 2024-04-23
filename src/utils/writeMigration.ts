@@ -95,7 +95,7 @@ ${commands}
 ${commandsDown}
 
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up (queryInterface: any, Sequelize: any) {
     let index = 0;
     while (index < migrationCommands.length) {
         let command = migrationCommands[index];
@@ -104,7 +104,7 @@ module.exports = {
         await queryInterface[command.fn].apply(queryInterface, command.params);
     }
   },
-  async down (queryInterface, Sequelize) {
+  async down (queryInterface: any, Sequelize: any) {
     let index = 0;
     while (index < rollbackCommands.length) {
         let command = rollbackCommands[index];
@@ -123,7 +123,7 @@ module.exports = {
     options.outDir,
     `${
       revisionNumber + (name !== "" ? `-${name.replace(/[\s-]/g, "_")}` : "")
-    }.js`
+    }.cts`
   );
 
   fs.writeFileSync(filename, template);
