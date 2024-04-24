@@ -27,10 +27,12 @@ export default async function sqlMigration(currentState, options) {
   };
 
   const template = `'use strict';
+  
+  import { QueryInterface } from 'sequelize';
 
   /** @type {import('sequelize-cli').Migration} */
   module.exports = {
-    async up (queryInterface: any, Sequelize: any) {
+    async up (queryInterface: QueryInterface) {
       /**
        * Add altering commands here.
        *
@@ -39,7 +41,7 @@ export default async function sqlMigration(currentState, options) {
        */
     },
   
-    async down (queryInterface: any, Sequelize: any) {
+    async down (queryInterface: QueryInterface) {
       /**
        * Add reverting commands here.
        *

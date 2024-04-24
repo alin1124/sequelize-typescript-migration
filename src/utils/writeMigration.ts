@@ -79,7 +79,7 @@ export default async function writeMigration(currentState, migration, options) {
 
   const template = `'use strict';
 
-const Sequelize = require('sequelize');
+import Sequelize, { QueryInterface } from 'sequelize';
 
 /**
  * Actions summary:
@@ -95,22 +95,22 @@ ${commands}
 ${commandsDown}
 
 module.exports = {
-  async up (queryInterface: any, Sequelize: any) {
+  async up (queryInterface: QueryInterface) {
     let index = 0;
     while (index < migrationCommands.length) {
         let command = migrationCommands[index];
         console.log("[#"+index+"] execute: " + command.fn);
         index++;
-        await queryInterface[command.fn].apply(queryInterface, command.params);
+        await (queryInterface as any)[command.fn].apply(queryInterface, command.params);
     }
   },
-  async down (queryInterface: any, Sequelize: any) {
+  async down (queryInterface: QueryInterface) {
     let index = 0;
     while (index < rollbackCommands.length) {
         let command = rollbackCommands[index];
         console.log("[#"+index+"] execute: " + command.fn);
         index++;
-        await queryInterface[command.fn].apply(queryInterface, command.params);
+        await (queryInterface as any)[command.fn].apply(queryInterface, command.params);
     }
   },
   info
