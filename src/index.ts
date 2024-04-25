@@ -14,6 +14,8 @@ import path from "path";
 import initMigration, { FILE_NAME } from "./utils/initMigration";
 import getMigrator from "./utils/getMigrator";
 
+export { Audit } from "./decorators/audit/audit";
+
 export type IMigrationOptions = {
     /**
      * directory where migration file saved. We recommend that you specify this path to sequelize migration path.

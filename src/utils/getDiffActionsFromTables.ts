@@ -1,6 +1,8 @@
 import { diff } from "deep-diff";
 
 import type { Json } from "../constants";
+import { IInterceptMigration } from "../decorators/interceptors/IInterceptor";
+import { interceptMigration } from "../decorators/interceptors/interceptor";
 import sortActions from "./sortActions";
 
 export interface IAction {
@@ -238,7 +240,11 @@ export default function getDiffActionsFromTables(
     }
   });
 
-  const result = sortActions(actions);
-
+  let interceptMigrationInput: IInterceptMigration = {
+    tableState: currentStateTables,
+    actions: actions
+  };
+  interceptMigration(interceptMigrationInput);
+  let result = sortActions(interceptMigrationInput.actions);
   return result;
 }

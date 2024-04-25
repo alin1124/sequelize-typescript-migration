@@ -4,6 +4,7 @@ import type {
   ModelStatic
 } from "sequelize";
 import type { Sequelize } from "sequelize-typescript";
+import { interceptModel } from "../decorators/interceptors/interceptor";
 import { makeColumnName } from "./makeColumnName";
 import parseIndex from "./parseIndex";
 import reverseSequelizeColType from "./reverseSequelizeColType";
@@ -96,6 +97,7 @@ export default function reverseModels(
       }
 
     tables[model.tableName].indexes = indexOut;
+    interceptModel(model, tables[model.tableName]);
   } // model in models
 
   return tables;
