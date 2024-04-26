@@ -92,7 +92,7 @@ export class SequelizeTypescriptMigration {
             tables: getTablesFromModels(sequelize, models, options),
         };
 
-        await SequelizeTypescriptMigration.initMigration(sequelize, currentState, options);
+        await SequelizeTypescriptMigration.initMigration(currentState, options);
 
         let info;
 
@@ -142,14 +142,14 @@ npx sequelize db:migrate --to ${info.revisionNumber}-${info.info.name}.js ${`--m
     };
 
     /**
-     * @param sequelize sequelize-typescript instance
-     * @param options options
+     * @param currentState 
+     * @param options 
+     * @returns {void}
      */
-    public static initMigration = async (sequelize: Sequelize, currentState: MigrationState, options: IMigrationOptions) => {
+    public static initMigration = async (currentState: MigrationState, options: IMigrationOptions) => {
         if (existsSync(path.join(options.outDir, FILE_NAME))) {
             return;
         }
-        const queryInterface = sequelize.getQueryInterface();
         const info = await initMigration(currentState, options);
         console.log(`Initial migration to revision ${currentState.revision} has been saved to file '${info.filename}'`);
         // save current state, Ugly hack, see https://github.com/sequelize/sequelize/issues/8310

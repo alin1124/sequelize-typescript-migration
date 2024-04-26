@@ -54,7 +54,11 @@ export class auditInterceptor implements IInterceptor {
         seqType: 'Sequelize.DATE'
     };
 
-    auditTable.tableName = `${auditTable.tableName}Audit`;
+    auditTable.tableName = `${auditTable.tableName}_audit`;
+
+    //create trigger for audit table
+    auditTable.rawSQL = `create trigger audit_update before update on "${model.tableName}" for each row execute procedure audit_trigger();
+    create trigger audit_insert before insert on "${model.tableName}" for each row execute procedure audit_trigger();`;
     tables[auditTable.tableName] = auditTable;
   }
 }

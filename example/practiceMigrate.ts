@@ -23,7 +23,7 @@ const bootstrap = async () => {
     const result = await SequelizeTypescriptMigration.migrate(sequelize, {
       path: join(__dirname, "./db/migrations"),
       dir: MigratorDir.UP,
-      pattern: /\.cts$/ 
+      pattern: /\.js$/ 
     });
     console.log(result);
   } catch (e) {

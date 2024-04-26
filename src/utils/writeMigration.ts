@@ -13,6 +13,20 @@ export default async function writeMigration(currentState, migration, options) {
 
   const name = options.migrationName || "table-sync";
   const comment = options.comment || "";
+  const tables = currentState.tables;
+  
+  let rawSQLs: string[] = [];
+  for (let tableName in tables) {
+    const table = tables[tableName];
+    if (table.rawSQL) {
+      rawSQLs.push(`\`${table.rawSQL}\``);
+    }
+    delete table.rawSQL;
+  }
+
+  const rawSQLsCommand = `const rawSQLsCommand = [\n${rawSQLs.join(
+    ", \n"
+  )} \n];\n`;
 
   let myState = JSON.stringify(currentState);
   const searchRegExp = /'/g;
@@ -94,6 +108,8 @@ ${commands}
 
 ${commandsDown}
 
+${rawSQLsCommand}
+
 module.exports = {
   async up (queryInterface: QueryInterface) {
     let index = 0;
@@ -102,6 +118,13 @@ module.exports = {
         console.log("[#"+index+"] execute: " + command.fn);
         index++;
         await (queryInterface as any)[command.fn].apply(queryInterface, command.params);
+    }
+    index = 0;
+    while (index < rawSQLsCommand.length) {
+        let command = rawSQLsCommand[index];
+        console.log("[#"+index+"] execute: " + command);
+        index++;
+        await queryInterface.sequelize.query(command);
     }
   },
   async down (queryInterface: QueryInterface) {
