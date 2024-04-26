@@ -8,7 +8,7 @@ export interface IInterceptMigration {
 }
 
 export interface IInterceptor {
-    interceptModel(model: ModelStatic<Model>): Promise<void> | void;
-
-    interceptMigration(input: IInterceptMigration): Promise<void> | void;
+    interceptModel(model: ModelStatic<Model>, tables: {
+        [key: string]: any;
+    }): Promise<void> | void;
 }

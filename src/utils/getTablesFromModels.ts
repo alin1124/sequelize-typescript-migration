@@ -97,7 +97,7 @@ export default function reverseModels(
       }
 
     tables[model.tableName].indexes = indexOut;
-    interceptModel(model, tables[model.tableName]);
+    interceptModel(model, tables);
   } // model in models
 
   return tables;
