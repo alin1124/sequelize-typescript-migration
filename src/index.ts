@@ -14,7 +14,7 @@ import path from "path";
 import initMigration, { FILE_NAME } from "./utils/initMigration";
 import getMigrator from "./utils/getMigrator";
 
-export { Audit } from "./decorators/audit/audit";
+export * from "./decorators/audit";
 
 export type IMigrationOptions = {
     /**
