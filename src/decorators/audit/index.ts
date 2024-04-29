@@ -1,2 +1,2 @@
-export * from './auditInterceptor';
+export * from './auditSubscriber';
 export * from './audit';
