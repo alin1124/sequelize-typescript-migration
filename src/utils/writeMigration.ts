@@ -13,6 +13,20 @@ export default async function writeMigration(currentState, migration, options) {
 
   const name = options.migrationName || "table-sync";
   const comment = options.comment || "";
+  const tables = currentState.tables;
+  
+  let rawSQLs: string[] = [];
+  for (let tableName in tables) {
+    const table = tables[tableName];
+    if (table.rawSQL) {
+      rawSQLs.push(`\`${table.rawSQL}\``);
+    }
+    delete table.rawSQL;
+  }
+
+  const rawSQLsCommand = `const rawSQLsCommand = [\n${rawSQLs.join(
+    ", \n"
+  )} \n];\n`;
 
   let myState = JSON.stringify(currentState);
   const searchRegExp = /'/g;
@@ -79,7 +93,7 @@ export default async function writeMigration(currentState, migration, options) {
 
   const template = `'use strict';
 
-const Sequelize = require('sequelize');
+import Sequelize, { QueryInterface } from 'sequelize';
 
 /**
  * Actions summary:
@@ -94,23 +108,32 @@ ${commands}
 
 ${commandsDown}
 
+${rawSQLsCommand}
+
 module.exports = {
-  async up (queryInterface: any, Sequelize: any) {
+  async up (queryInterface: QueryInterface) {
     let index = 0;
     while (index < migrationCommands.length) {
         let command = migrationCommands[index];
         console.log("[#"+index+"] execute: " + command.fn);
         index++;
-        await queryInterface[command.fn].apply(queryInterface, command.params);
+        await (queryInterface as any)[command.fn].apply(queryInterface, command.params);
+    }
+    index = 0;
+    while (index < rawSQLsCommand.length) {
+        let command = rawSQLsCommand[index];
+        console.log("[#"+index+"] execute: " + command);
+        index++;
+        await queryInterface.sequelize.query(command);
     }
   },
-  async down (queryInterface: any, Sequelize: any) {
+  async down (queryInterface: QueryInterface) {
     let index = 0;
     while (index < rollbackCommands.length) {
         let command = rollbackCommands[index];
         console.log("[#"+index+"] execute: " + command.fn);
         index++;
-        await queryInterface[command.fn].apply(queryInterface, command.params);
+        await (queryInterface as any)[command.fn].apply(queryInterface, command.params);
     }
   },
   info

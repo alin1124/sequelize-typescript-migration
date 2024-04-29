@@ -238,7 +238,6 @@ export default function getDiffActionsFromTables(
     }
   });
 
-  const result = sortActions(actions);
-
+  let result = sortActions(actions);
   return result;
 }

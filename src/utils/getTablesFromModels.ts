@@ -4,6 +4,7 @@ import type {
   ModelStatic
 } from "sequelize";
 import type { Sequelize } from "sequelize-typescript";
+import { modelEvent } from "../event/event";
 import { makeColumnName } from "./makeColumnName";
 import parseIndex from "./parseIndex";
 import reverseSequelizeColType from "./reverseSequelizeColType";
@@ -70,6 +71,7 @@ export default function reverseModels(
         "references",
         "onUpdate",
         "onDelete",
+        "defaultValue"
         // "validate",
       ].forEach((key) => {
         if (attribute[key] !== undefined) rowAttribute[key] = attribute[key];
@@ -96,6 +98,7 @@ export default function reverseModels(
       }
 
     tables[model.tableName].indexes = indexOut;
+    modelEvent.publish('model.post.load', {model: model, tables: tables});
   } // model in models
 
   return tables;

@@ -3,7 +3,7 @@ import * as path from "path";
 
 import removeCurrentRevisionMigrations from "./removeCurrentRevisionMigrations";
 
-export const FILE_NAME = '00000001-init.js';
+export const FILE_NAME = '00000001-init.cts';
 
 export const MIGRATION_NAME = 'init';
 
@@ -30,9 +30,47 @@ export default async function initMigration(currentState, options) {
     comment,
   };
 
+  const auditTrigger = `CREATE OR REPLACE FUNCTION public.audit_trigger()
+  RETURNS trigger
+  LANGUAGE plpgsql
+ AS $function$
+     DECLARE columns text;
+     table_exists bool;
+ begin
+     
+ execute format(
+     ' SELECT EXISTS (
+     SELECT FROM 
+         information_schema.tables 
+     WHERE 
+         table_type LIKE ''BASE TABLE'' AND
+         table_name = ''%1$s_audit''
+     );
+     ', TG_TABLE_NAME ) into table_exists;
+ -- if the table itself is not a history table and it has a corresponding history table, copy the record
+ if POSITION('_audit' in TG_TABLE_NAME) = 0 AND table_exists then
+ EXECUTE format('SELECT  string_agg(''"'' || c1.attname || ''"'', '','')
+     FROM    pg_attribute c1
+     where      c1.attrelid = ''%s''::regclass
+     AND     c1.attname <> ''id''
+     AND     c1.attnum > 0;', TG_TABLE_NAME) INTO columns;
+ 
+     execute  format(
+         '   INSERT INTO %1$s_audit ( "auditId", id, %2$s )
+             values (md5(random()::text || ''%3$s'' || clock_timestamp()::text)::uuid, $1.*)
+         ', TG_TABLE_NAME, columns, new.id) using new;
+         
+ end if;
+ RETURN NEW;
+ END
+ $function$
+ ;`;
+
+  const dropAuditFunction = `DROP FUNCTION IF EXISTS public.audit_trigger;`;
+
   const template = `'use strict';
 
-  const Sequelize = require('sequelize');
+  import Sequelize, { QueryInterface } from 'sequelize';
   
   /**
    * Actions summary:
@@ -148,23 +186,25 @@ export default async function initMigration(currentState, options) {
   ];
   
   module.exports = {
-    async up (queryInterface: any, Sequelize: any) {
+    async up (queryInterface: QueryInterface) {
       let index = 0;
       while (index < migrationCommands.length) {
           let command = migrationCommands[index];
           console.log("[#"+index+"] execute: " + command.fn);
           index++;
-          await queryInterface[command.fn].apply(queryInterface, command.params);
+          await (queryInterface as any)[command.fn].apply(queryInterface, command.params);
       }
+      await queryInterface.sequelize.query(\`${auditTrigger}\`);
     },
-    async down (queryInterface: any, Sequelize: any) {
+    async down (queryInterface: QueryInterface) {
       let index = 0;
       while (index < rollbackCommands.length) {
           let command = rollbackCommands[index];
           console.log("[#"+index+"] execute: " + command.fn);
           index++;
-          await queryInterface[command.fn].apply(queryInterface, command.params);
+          await (queryInterface as any)[command.fn].apply(queryInterface, command.params);
       }
+      await queryInterface.sequelize.query(\`${dropAuditFunction}\`);
     },
     info
   };   
