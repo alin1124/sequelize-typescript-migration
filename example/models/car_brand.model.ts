@@ -7,7 +7,7 @@ export class CarBrand extends Model<CarBrand> {
   @Column
   name!: string;
 
-  @Default(true)
+  @Default({value: true})
   @Column(DataType.BOOLEAN)
   isCertified!: boolean;
 

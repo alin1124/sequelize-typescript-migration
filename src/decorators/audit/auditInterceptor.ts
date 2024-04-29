@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { ModelStatic } from "sequelize";
+import { ModelStatic, Sequelize } from "sequelize";
 import { Model } from "sequelize-typescript";
 import { IInterceptor } from "../interceptors/IInterceptor";
 import { registerInterceptor } from "../interceptors/registerInterceptor";
@@ -51,7 +51,8 @@ export class auditInterceptor implements IInterceptor {
     //create audit table date column
     auditTable.schema.auditDate = {
         allowNull: false,
-        seqType: 'Sequelize.DATE'
+        seqType: 'Sequelize.DATE',
+        defaultValue: {value: Sequelize.fn('now')}
     };
 
     auditTable.tableName = `${auditTable.tableName}_audit`;
