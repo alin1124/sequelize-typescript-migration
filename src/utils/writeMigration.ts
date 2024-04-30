@@ -24,7 +24,7 @@ export default async function writeMigration(currentState, migration, options) {
     delete table.rawSQL;
   }
 
-  const rawSQLsCommand = `const rawSQLsCommand = [\n${rawSQLs.join(
+  const rawSQLsCommand = `const rawSQLsCommand: string[] = [\n${rawSQLs.join(
     ", \n"
   )} \n];\n`;
 
