@@ -1,6 +1,6 @@
 {
   "name": "ht-sequelize",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "migration tool for sequelize & haven developers",
   "keywords": [
     "sequelize",
@@ -36,7 +36,6 @@
     "events": "^3.3.0",
     "inflection": "^1.13.2",
     "js-beautify": "^1.14.0",
-    "mysql2": "^2.3.3",
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.23.2",
     "sequelize-cli": "^6.5.1",
