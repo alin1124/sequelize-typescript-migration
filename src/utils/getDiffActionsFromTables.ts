@@ -142,17 +142,7 @@ export default function getDiffActionsFromTables(
           const tableName = df.path[0];
 
           if (df.path.length === 1) {
-            // drop table
-            const depends: string[] = [];
-            Object.values(df.lhs.schema).forEach((v: any) => {
-              if (v.references) depends.push(v.references.model);
-            });
-
-            actions.push({
-              actionType: "dropTable",
-              tableName,
-              depends,
-            });
+            // drop table will be skipped
             break;
           }
 
