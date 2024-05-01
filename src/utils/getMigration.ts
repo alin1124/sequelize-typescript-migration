@@ -28,7 +28,7 @@ ${JSON.stringify(action.options)}
 
       case "dropTable":
         {
-          const res = `{ fn: "dropTable", params: ["${action.tableName}"] }`;
+          const res = `{ fn: "dropTable", params: ["${action.tableName}", {"cascade": "true"}] }`;
 
           commandsUp.push(res);
           consoleOut.push(`dropTable "${action.tableName}"`);

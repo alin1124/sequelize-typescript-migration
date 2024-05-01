@@ -46,7 +46,7 @@ export default function getDiffActionsFromTables(
       case "N":
         {
           // new table created
-          if (df.path.length === 1) {
+          if (df.path.length === 1 && direction !== Direction.Down) {
             const depends: string[] = [];
             const tableName = df.rhs.tableName as string;
 
@@ -141,8 +141,18 @@ export default function getDiffActionsFromTables(
         {
           const tableName = df.path[0];
 
-          if (df.path.length === 1) {
-            // drop table will be skipped
+          if (df.path.length === 1 && direction !== Direction.Up) {
+            // drop table only allow on rollback
+            const depends: string[] = [];
+            Object.values(df.lhs.schema).forEach((v: any) => {
+              if (v.references) depends.push(v.references.model);
+            });
+
+            actions.push({
+              actionType: "dropTable",
+              tableName,
+              depends,
+            });
             break;
           }
 
